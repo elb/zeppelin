@@ -52,7 +52,6 @@ import java.util.*;
 public class PhpInterpreter extends Interpreter {
   private static final Logger LOGGER = LoggerFactory.getLogger(PhpInterpreter.class);
   private final String shell = "php";
-  private static final String TIMEOUT_PROPERTY = "shell.command.timeout.millisecs";
   private String DEFAULT_TIMEOUT_PROPERTY = "10000";
   ConcurrentHashMap<String, DefaultExecutor> executors;
 
@@ -62,7 +61,6 @@ public class PhpInterpreter extends Interpreter {
 
   @Override
   public void open() {
-    LOGGER.info("Command timeout property: {}", getProperty(TIMEOUT_PROPERTY));
     executors = new ConcurrentHashMap<>();
   }
 
@@ -88,58 +86,28 @@ public class PhpInterpreter extends Interpreter {
 
     CommandLine cmdLine = new CommandLine(this.shell);
     cmdLine.addArgument("-r");
-    cmdLine.addArgument(cmd);
+    cmdLine.addArgument(cmd, false);
 
-    DefaultExecutor executor = new DefaultExecutor();
-    executor.setWatchdog(new ExecuteWatchdog(
-      Long.valueOf(DEFAULT_TIMEOUT_PROPERTY)));
-    executor.setStreamHandler(new PumpStreamHandler(outStream, contextInterpreter.out));
+    LOGGER.debug("Command line: " + cmdLine);
     try {
+      DefaultExecutor executor = new DefaultExecutor();
+      executor.setWatchdog(new ExecuteWatchdog(
+        Long.valueOf(DEFAULT_TIMEOUT_PROPERTY)));
+      executor.setStreamHandler(new PumpStreamHandler(outStream, contextInterpreter.out));
+      executors.put(contextInterpreter.getParagraphId(), executor);
+
       int exitVal = executor.execute(cmdLine);
       LOGGER.debug(outStream.toString());
       return new InterpreterResult(Code.SUCCESS, outStream.toString());
     } catch (ExecuteException e) {
-      LOGGER.debug("ExecuteException" + e.getMessage());
+      LOGGER.debug("ExecuteException: " + e.getMessage());
       return new InterpreterResult(Code.ERROR, e.getMessage());
     } catch (IOException e) {
       LOGGER.error("IOException: Can not run " + cmd, e);
       return new InterpreterResult(Code.ERROR, e.getMessage());
+    } finally {
+      executors.remove(contextInterpreter.getParagraphId());
     }
-    // DefaultExecutor executor = new DefaultExecutor();
-    // executor.setStreamHandler(new PumpStreamHandler(
-    //   outStream, contextInterpreter.out));
-    // try {
-
-    //   executor.setWatchdog(new ExecuteWatchdog(
-    //       Long.valueOf(DEFAULT_TIMEOUT_PROPERTY)));
-
-    //   executors.put(contextInterpreter.getParagraphId(), executor);
-    //   // if (Boolean.valueOf(getProperty(DIRECTORY_USER_HOME))) {
-    //   //   executor.setWorkingDirectory(new File(System.getProperty("user.home")));
-    //   // }
-
-    //   int exitVal = executor.execute(cmdLine);
-    //   LOGGER.info("Paragraph " + contextInterpreter.getParagraphId()
-    //     + " return with exit value: " + exitVal);
-    //   return new InterpreterResult(Code.SUCCESS, outStream.toString());
-    // } catch (ExecuteException e) {
-    //   int exitValue = e.getExitValue();
-    //   LOGGER.error("Can not run the following code " + cmd, e);
-    //   String message = outStream.toString();
-    //   // if (exitValue == 143) {
-    //   //   code = Code.INCOMPLETE;
-    //   //   message += "Paragraph received a SIGTERM\n";
-    //   //   LOGGER.info("The paragraph " + contextInterpreter.getParagraphId()
-    //   //     + " stopped executing: " + message);
-    //   // }
-    //   message += "ExitValue: " + exitValue;
-    //   return new InterpreterResult(Code.ERROR, message);
-    // } catch (IOException e) {
-    //   LOGGER.error("Can not run " + cmd, e);
-    //   return new InterpreterResult(Code.ERROR, e.getMessage());
-    // } finally {
-    //   executors.remove(contextInterpreter.getParagraphId());
-    // }
   }
 
   @Override
