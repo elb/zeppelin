@@ -48,6 +48,7 @@
         "src-noconflict/mode-markdown.js",
         "src-noconflict/mode-pig.js",
         "src-noconflict/mode-sh.js",
+        "src-noconflict/mode-php.js",
         "src-noconflict/mode-r.js",
         "src-noconflict/keybinding-emacs.js",
         "src-noconflict/ext-language_tools.js",
