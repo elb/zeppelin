@@ -1,0 +1,13 @@
+[
+  {
+    "group": "php",
+    "name": "php",
+    "className": "org.apache.zeppelin.php.PhpInterpreter",
+    "properties": {
+    },
+    "editor": {
+      "language": "php",
+      "editOnDblClick": true
+    }
+  }
+]
