@@ -84,9 +84,11 @@ public class PhpInterpreter extends Interpreter {
 
     OutputStream outStream = new ByteArrayOutputStream();
 
+    String helperPath = System.getenv("ZEPPELIN_HOME") + "/interpreter/php/helper.php";
+
     CommandLine cmdLine = new CommandLine(this.shell);
     cmdLine.addArgument("-r");
-    cmdLine.addArgument(cmd, false);
+    cmdLine.addArgument("require_once '" + helperPath + "';" + cmd, false);
 
     LOGGER.debug("Command line: " + cmdLine);
     try {
@@ -97,13 +99,15 @@ public class PhpInterpreter extends Interpreter {
       executors.put(contextInterpreter.getParagraphId(), executor);
 
       int exitVal = executor.execute(cmdLine);
-      LOGGER.debug(outStream.toString());
+
       return new InterpreterResult(Code.SUCCESS, outStream.toString());
     } catch (ExecuteException e) {
       LOGGER.debug("ExecuteException: " + e.getMessage());
+
       return new InterpreterResult(Code.ERROR, e.getMessage());
     } catch (IOException e) {
       LOGGER.error("IOException: Can not run " + cmd, e);
+
       return new InterpreterResult(Code.ERROR, e.getMessage());
     } finally {
       executors.remove(contextInterpreter.getParagraphId());
