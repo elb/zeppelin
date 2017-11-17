@@ -965,7 +965,7 @@ function ParagraphCtrl ($scope, $rootScope, $route, $window, $routeParams, $loca
     let mode = 'ace/mode/'
     mode += language
     $scope.paragraph.config.editorMode = mode
-    session.setMode(mode)
+    session.setMode({path: mode, inline: true})
   }
 
   const setParagraphMode = function (session, paragraphText, pos) {
