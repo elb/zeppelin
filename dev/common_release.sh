@@ -42,10 +42,10 @@ usage() {
   exit 1
 }
 
-function git_clone() { 
+function git_clone() {
   echo "Clone the source"
   # clone source
-  git clone https://git-wip-us.apache.org/repos/asf/zeppelin.git "${WORKING_DIR}/zeppelin"
+  git clone git@github.com:elb/zeppelin.git "${WORKING_DIR}/zeppelin"
 
   if [[ $? -ne 0 ]]; then
     echo "Can not clone source repository"
